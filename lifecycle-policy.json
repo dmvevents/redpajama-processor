@@ -1,0 +1,17 @@
+{
+  "Rules": [
+    {
+      "ID": "Transition to Intelligent-Tiering",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "redpajama-v2/en/"
+      },
+      "Transitions": [
+        {
+          "Days": 30,
+          "StorageClass": "INTELLIGENT_TIERING"
+        }
+      ]
+    }
+  ]
+}

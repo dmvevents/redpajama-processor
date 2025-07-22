@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::058264135704:oidc-provider/oidc.eks.us-east-2.amazonaws.com/id/47C21945D3A412578B57DE0A209423EF"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.us-east-2.amazonaws.com/id/47C21945D3A412578B57DE0A209423EF:sub": "system:serviceaccount:kube-system:s3-csi-driver-sa",
+          "oidc.eks.us-east-2.amazonaws.com/id/47C21945D3A412578B57DE0A209423EF:aud": "sts.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+#Python
+pycache/ *.py[cod] *$py.class *.so .Python env/ build/ develop-eggs/ dist/ downloads/ eggs/ .eggs/ lib/ lib64/ parts/ sdist/ var/ *.egg-info/ .installed.cfg *.egg
+
+#Logs
+*.log logs/
+
+#Output data
+sample_documents.json rpv2-2023-06-raw/ rpv2-2023-06/
+
+#IDE
+.idea/ .vscode/ *.swp *.swo
+
+#Environment
+.env .venv venv/ ENV/ 

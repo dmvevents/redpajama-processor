@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redpajama-processor
+spec:
+  containers:
+  - name: redpajama-curator
+    image: 058264135704.dkr.ecr.us-east-2.amazonaws.com/redpajama-curator:latest
+    command: ["/bin/bash"]
+    args: ["-c", "sleep infinity"]
+    resources:
+      limits:
+        nvidia.com/gpu: "8"
+      requests:
+        nvidia.com/gpu: "8"
+    volumeMounts:
+    - name: fsx-data
+      mountPath: /data
+    - name: processing-dir
+      mountPath: /processing
+    - name: shm
+      mountPath: /dev/shm
+    env:
+    - name: PYTHONPATH
+      value: "/opt/ml/code"
+  volumes:
+  - name: fsx-data
+    persistentVolumeClaim:
+      claimName: redpajama-fsx-claim
+  - name: processing-dir
+    emptyDir:
+      sizeLimit: 500Gi
+  - name: shm
+    emptyDir:
+      medium: Memory
+      sizeLimit: 32Gi

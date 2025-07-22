@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redpajama-fsx-pv
+spec:
+  capacity:
+    storage: 2400Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: redpajama-fsx-sc
+  csi:
+    driver: fsx.csi.aws.com
+    volumeHandle: fs-095833038df0b325d
+    volumeAttributes:
+      dnsname: fs-095833038df0b325d.fsx.us-east-2.amazonaws.com
+      mountname: fsx

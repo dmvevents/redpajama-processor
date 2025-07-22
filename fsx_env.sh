@@ -1,0 +1,7 @@
+export FSX_ID="fs-095833038df0b325d"
+export FSX_DNS="fs-095833038df0b325d.fsx.us-east-2.amazonaws.com"
+export FSX_MOUNT_NAME="dcrorbev"
+export FSX_SUBNET_ID="subnet-0b9ae3d7f944fe695"
+export SECURITY_GROUP_ID="sg-01625e9ce7fd17e99"
+export STORAGE_CAPACITY="2400Gi"
+export AWS_REGION="us-east-2"

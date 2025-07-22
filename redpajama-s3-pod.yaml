@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redpajama-processor
+spec:
+  containers:
+  - name: redpajama-curator
+    image: 058264135704.dkr.ecr.us-east-2.amazonaws.com/redpajama-curator:latest
+    command: ["/bin/bash"]
+    args: ["-c", "sleep infinity"]
+    resources:
+      limits:
+        nvidia.com/gpu: "8"
+        ephemeral-storage: "2Ti"
+      requests:
+        ephemeral-storage: "1Ti"
+    volumeMounts:
+    - name: s3-data
+      mountPath: /data
+      readOnly: true
+    - name: processing-dir
+      mountPath: /processing
+    - name: shared-memory
+      mountPath: /dev/shm
+    - name: temp-storage
+      mountPath: /tmp
+  volumes:
+  - name: s3-data
+    persistentVolumeClaim:
+      claimName: redpajama-s3-pvc
+  - name: processing-dir
+    persistentVolumeClaim:
+      claimName: processing-pvc
+  - name: shared-memory
+    emptyDir:
+      medium: Memory
+      sizeLimit: 32Gi
+  - name: temp-storage
+    persistentVolumeClaim:
+      claimName: temp-storage-pvc
