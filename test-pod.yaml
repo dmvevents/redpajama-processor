@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: correct-subnet-fsx-test
+spec:
+  containers:
+  - name: app
+    image: ubuntu:20.04
+    command: ["/bin/bash"]
+    args: ["-c", "apt-get update && apt-get install -y util-linux && while true; do echo $(date -u) >> /data/test-output.txt; df -h /data; sleep 30; done"]
+    volumeMounts:
+    - name: fsx-storage
+      mountPath: /data
+  volumes:
+  - name: fsx-storage
+    persistentVolumeClaim:
+      claimName: correct-subnet-fsx-claim

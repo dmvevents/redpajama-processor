@@ -1,9 +1,0 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: fsx-sc
-provisioner: fsx.csi.aws.com
-parameters:
-  fileSystemId: fs-095833038df0b325d
-  subnetId: subnet-0b9ae3d7f944fe695
-  securityGroupIds: sg-01625e9ce7fd17e99

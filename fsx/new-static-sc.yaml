@@ -1,0 +1,11 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: correct-subnet-fsx-sc
+provisioner: fsx.csi.aws.com
+parameters:
+  fileSystemId: fs-0a8d4cf33a5d9c4a2
+  subnetId: subnet-016ae57fcc8d2e8a7
+  securityGroupIds: sg-092c081fb21a802ea
+mountOptions:
+  - flock

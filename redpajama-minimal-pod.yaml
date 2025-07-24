@@ -9,28 +9,27 @@ spec:
     command: ["/bin/bash"]
     args: ["-c", "sleep infinity"]
     resources:
-      limits:
-        nvidia.com/gpu: "8"
       requests:
-        nvidia.com/gpu: "8"
+        nvidia.com/gpu: 8
+        vpc.amazonaws.com/efa: 32
+      limits:
+        nvidia.com/gpu: 8
+        vpc.amazonaws.com/efa: 32
     volumeMounts:
-    - name: fsx-data
-      mountPath: /data
+    - name: s3-data
+      mountPath: /s3
+      readOnly: true
     - name: processing-dir
       mountPath: /processing
-    - name: shm
-      mountPath: /dev/shm
-    env:
-    - name: PYTHONPATH
-      value: "/opt/ml/code"
+    - name: fsx-storage
+      mountPath: /data
   volumes:
-  - name: fsx-data
+  - name: fsx-storage
     persistentVolumeClaim:
-      claimName: redpajama-fsx-claim
+      claimName: correct-subnet-fsx-claim
+  - name: s3-data
+    persistentVolumeClaim:
+      claimName: redpajama-s3-pvc
   - name: processing-dir
     emptyDir:
-      sizeLimit: 500Gi
-  - name: shm
-    emptyDir:
-      medium: Memory
-      sizeLimit: 32Gi
+      sizeLimit: "2000Gi"
