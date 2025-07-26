@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: redpajama-curator
-    image: 058264135704.dkr.ecr.us-east-2.amazonaws.com/redpajama-curator:latest
+    image: 058264135704.dkr.ecr.us-west-2.amazonaws.com/sagemaker-nemo-curator:latest
     command: ["/bin/bash"]
     args: ["-c", "sleep infinity"]
     resources:

@@ -1,0 +1,90 @@
+Metadata-Version: 2.4
+Name: dask-kubernetes
+Version: 2025.7.0
+Summary: Native Kubernetes integration for Dask
+Project-URL: Homepage, https://github.com/dask/dask-kubernetes
+Maintainer: Jacob Tomlinson
+License: BSD 3-Clause License
+        
+        Copyright (c) 2023, Dask Developers, Yuvi Panda, Anaconda Inc, NVIDIA
+        All rights reserved.
+        
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions are met:
+        
+        * Redistributions of source code must retain the above copyright notice, this
+          list of conditions and the following disclaimer.
+        
+        * Redistributions in binary form must reproduce the above copyright notice,
+          this list of conditions and the following disclaimer in the documentation
+          and/or other materials provided with the distribution.
+        
+        * Neither the name of the copyright holder nor the names of its
+          contributors may be used to endorse or promote products derived from
+          this software without specific prior written permission.
+        
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+        OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+License-File: LICENSE
+Keywords: dask,distributed,kubernetes
+Requires-Python: >=3.10
+Requires-Dist: dask>=2022.08.1
+Requires-Dist: distributed>=2022.08.1
+Requires-Dist: kopf>=1.38.0
+Requires-Dist: kr8s==0.20.*
+Requires-Dist: kubernetes-asyncio>=12.0.1
+Requires-Dist: kubernetes>=12.0.1
+Requires-Dist: pykube-ng>=22.9.0
+Requires-Dist: rich>=12.5.1
+Description-Content-Type: text/x-rst
+
+Dask Kubernetes
+===============
+
+
+.. image:: https://github.com/dask/dask-kubernetes/actions/workflows/lint.yaml/badge.svg
+   :target: https://github.com/dask/dask-kubernetes/actions/workflows/lint.yaml
+   :alt: Linting GitHub Actions CI Status
+
+.. image:: https://github.com/dask/dask-kubernetes/actions/workflows/operator.yaml/badge.svg
+   :target: https://github.com/dask/dask-kubernetes/actions/workflows/operator.yaml
+   :alt: Operator Tests GitHub Actions CI Status
+
+.. image:: https://github.com/dask/dask-kubernetes/actions/workflows/release.yml/badge.svg
+   :target: https://github.com/dask/dask-kubernetes/actions/workflows/release.yml
+   :alt: Package build GitHub Actions CI Status
+
+.. image:: https://img.shields.io/readthedocs/dask-kubernetes?color=%232980B9&logo=read-the-docs&logoColor=white
+   :target: https://kubernetes.dask.org/
+   :alt: Read the Docs
+
+.. image:: https://img.shields.io/readthedocs/dask-kubernetes?color=%232980B9&label=developer%20docs&logo=read-the-docs&logoColor=white
+   :target: https://kubernetes.dask.org/releasing.html
+   :alt: Read the Docs Developer
+
+.. image:: https://img.shields.io/pypi/v/dask-kubernetes
+   :target: https://pypi.org/project/dask-kubernetes/
+   :alt: PyPI
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/dask-kubernetes
+   :target: https://anaconda.org/conda-forge/dask-kubernetes
+   :alt: Conda Forge
+
+.. image:: https://img.shields.io/badge/python%20support-3.10%7C3.11%7C3.12-blue
+   :target: https://kubernetes.dask.org/en/latest/installing.html#supported-versions
+   :alt: Python Support
+
+.. image:: https://img.shields.io/badge/Kubernetes%20support-1.28%7C1.29%7C1.30-blue
+   :target: https://kubernetes.dask.org/en/latest/installing.html#supported-versions
+   :alt: Kubernetes Support
+
+
+Native Kubernetes integration for Dask.

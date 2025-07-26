@@ -294,9 +294,9 @@ if __name__ == "__main__":
         analyze_documents(args.output_dir)
 
 ''''
-python /opt/ml/code/simple_processor.py \
-  --input-dir /data/redpajama-v2/en/documents/2023-06 \
-  --output-dir /processing/rpv2-processed \
-  --workers 8 \
-  --batch-size 20
+python /data/simple_processor.py \
+  --input-dir /data/redpajama/documents/2023-06 \
+  --output-dir /data/rpv2-processed \
+  --workers 40 \
+  --batch-size 100
 '''

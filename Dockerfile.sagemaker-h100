@@ -1,73 +1,155 @@
-# Dockerfile.sagemaker-h100-fixed
-FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-training:2.7.1-gpu-py312-cu128-ubuntu22.04-sagemaker-v1.0
+# Dockerfile.sagemaker-nemo-curator-essential
+ARG CUDA_VER=12.5.1
+ARG REPO_URL=https://github.com/NVIDIA/NeMo-Curator.git
+ARG CURATOR_COMMIT=main
+ARG IMAGE_LABEL=sagemaker-nemo-curator
 
-# Set environment variables
+# Stage 1: Clone NeMo Curator
+FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-training:2.7.1-gpu-py312-cu128-ubuntu22.04-sagemaker-v1.0 AS curator-update
+
+ARG REPO_URL
+ARG CURATOR_COMMIT
+
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+RUN bash -exu <<EOF
+  mkdir -p /opt/NeMo-Curator
+  cd /opt/NeMo-Curator
+  git init
+  git remote add origin $REPO_URL
+  git fetch --all
+  git fetch origin '+refs/pull/*/merge:refs/remotes/pull/*/merge'
+  git checkout $CURATOR_COMMIT
+EOF
+
+# Stage 2: Build dependencies with essential rapids setup
+FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-training:2.7.1-gpu-py312-cu128-ubuntu22.04-sagemaker-v1.0 AS deps
+
+LABEL "nemo.library"=${IMAGE_LABEL}
+WORKDIR /opt
+
+ARG CUDA_VER
+ENV PYTHON_VERSION=3.12
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl wget git build-essential ca-certificates file unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Miniconda
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+    bash /tmp/miniconda.sh -b -p /opt/conda && \
+    rm /tmp/miniconda.sh
+
+ENV PATH="/opt/conda/bin:$PATH"
+
+# Essential conda group setup (from rapids base)
+RUN groupadd conda && \
+    usermod -g conda root && \
+    chown -R root:conda /opt/conda && \
+    chmod -R 770 /opt/conda && \
+    chmod g+ws /opt/conda
+
+# Essential conda configuration (simplified from rapids)
+RUN bash -exu <<EOF
+# Ensure new files/dirs have group write permissions
+umask 002
+
+# Essential conda updates
+conda update --all -y -n base
+
+# Clean up
+find /opt/conda -follow -type f -name '*.a' -delete
+find /opt/conda -follow -type f -name '*.pyc' -delete
+conda clean -aiptfy
+EOF
+
+# Reset root group
+RUN usermod -g root root
+
+# Essential conda environment activation setup
+RUN ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh; conda activate base" >> /etc/skel/.bashrc && \
+    echo ". /opt/conda/etc/profile.d/conda.sh; conda activate base" >> ~/.bashrc
+
+# Create curator environment with essential CUDA libraries
+RUN conda create -y --name curator -c nvidia/label/cuda-${CUDA_VER} -c conda-forge \
+    python=3.12 \
+    cuda-cudart \
+    libcufft \
+    libcublas \
+    libcurand \
+    libcusparse \
+    libcusolver \
+    cuda-nvvm && \
+    conda clean -ay
+
+# Install essential packages in curator environment
+RUN /opt/conda/envs/curator/bin/pip install --upgrade pip setuptools wheel pytest pytest-coverage
+
+# Install RAPIDS packages
+RUN /opt/conda/envs/curator/bin/pip install --no-cache-dir --extra-index-url https://pypi.nvidia.com \
+    cudf-cu12==24.12.* \
+    dask-cudf-cu12==24.12.* \
+    cupy-cuda12x \
+    rmm-cu12==24.12.* \
+    dask[complete]==2024.11.* \
+    dask-cuda \
+    distributed
+
+# Copy and install NeMo Curator
+COPY --from=curator-update /opt/NeMo-Curator /opt/NeMo-Curator
+RUN cd /opt/NeMo-Curator && \
+    /opt/conda/envs/curator/bin/pip install --extra-index-url https://pypi.nvidia.com -e ".[all]"
+
+# Stage 3: Final SageMaker-compatible image
+FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-training:2.7.1-gpu-py312-cu128-ubuntu22.04-sagemaker-v1.0 AS final
+
+# SageMaker environment variables
 ENV PYTHONPATH=/opt/ml/code:$PYTHONPATH
 ENV CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 ENV NCCL_DEBUG=INFO
 ENV NCCL_TREE_THRESHOLD=0
 
-# Install system dependencies
+# Use curator environment (like the reference)
+ENV PATH=/opt/conda/envs/curator/bin:$PATH
+ENV CONDA_DEFAULT_ENV=curator
+
+LABEL "nemo.library"=${IMAGE_LABEL}
+WORKDIR /opt
+
+# Install SageMaker system dependencies
 RUN apt-get update && apt-get install -y \
-    s3fs \
-    fuse \
-    awscli \
-    git \
-    curl \
-    wget \
-    build-essential \
-    software-properties-common \
+    s3fs fuse awscli git curl wget build-essential software-properties-common \
+    ca-certificates file unzip \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install essential Python packages first
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+# Install base conda for environment support
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+    bash /tmp/miniconda.sh -b -p /opt/conda && \
+    rm /tmp/miniconda.sh
 
-# Install core RAPIDS packages compatible with CUDA 12.8 and Python 3.12
-RUN pip install --no-cache-dir \
-    cudf-cu12==24.12.* \
-    dask-cudf-cu12==24.12.* \
-    cupy-cuda12x \
-    rmm-cu12==24.12.*
+# Copy the complete curator environment from deps stage
+COPY --from=deps /opt/conda/envs/curator /opt/conda/envs/curator
 
-# Install Dask and distributed computing packages
-RUN pip install --no-cache-dir \
-    dask[complete]==2024.11.* \
-    dask-cuda \
-    distributed
+# Essential conda activation setup
+RUN ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh; conda activate curator" >> ~/.bashrc && \
+    echo ". /opt/conda/etc/profile.d/conda.sh; conda activate curator" >> /etc/skel/.bashrc
 
-# Install data processing packages
-RUN pip install --no-cache-dir \
-    fsspec[s3] \
-    s3fs \
-    boto3 \
-    pyarrow \
-    fastparquet \
-    pandas \
-    numpy
+# Install additional SageMaker packages
+RUN /opt/conda/envs/curator/bin/pip install --no-cache-dir \
+    fsspec[s3] s3fs boto3 pyarrow fastparquet \
+    tqdm rich psutil GPUtil
 
-# Install NeMo Curator (this might need to be done separately)
-RUN pip install --no-cache-dir \
-    nemo-curator || \
-    pip install --no-cache-dir git+https://github.com/NVIDIA/NeMo-Curator.git
-
-# Create working directories
+# Create SageMaker directories
 RUN mkdir -p /mnt/fsx /mnt/s3-data /opt/ml/processing /opt/ml/input /opt/ml/output /opt/ml/code
 
-# Set working directory
 WORKDIR /opt/ml/code
-
-# Copy processing scripts
 COPY . /opt/ml/code/
-
-# Set permissions
 RUN chmod +x /opt/ml/code/*.sh 2>/dev/null || true
 
-# Install additional utilities if needed
-RUN pip install --no-cache-dir \
-    tqdm \
-    rich \
-    psutil \
-    GPUtil
-
-# Test CUDA availability
-RUN python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'CUDA devices: {torch.cuda.device_count()}')"
+# Test all components
+RUN /opt/conda/envs/curator/bin/python -c "import torch; print(f'PyTorch CUDA: {torch.cuda.is_available()}, Devices: {torch.cuda.device_count()}')" && \
+    /opt/conda/envs/curator/bin/python -c "import cudf, dask_cudf, nemo_curator; print('All packages working!')"
